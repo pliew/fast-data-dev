@@ -90,6 +90,7 @@ You can further customize the execution of the container with additional flags:
  `DISABLE=<CONNECTOR>[,<CON2>]` | Disable one or more connectors. E.g `hbase`, `elastic` (Stream Reactor version), `elasticsearch` (Confluent version)
  `DEBUG=1`                      | Print stdout and stderr of all processes to container's stdout. Useful for debugging early container exits.
  `SAMPLEDATA=0`                 | Do not create `position-reports` topic with sample Avro records.
+ `JSON=1`                       | Store data using JSON rather than AVRO
 
 And execute the docker image if needed in `daemon` mode:
 

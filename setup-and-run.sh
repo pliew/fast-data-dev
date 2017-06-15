@@ -35,6 +35,7 @@ fi
 sed -e 's/2181/'"$ZK_PORT"'/' -e 's/8081/'"$REGISTRY_PORT"'/' -e 's/9092/'"$BROKER_PORT"'/' -i \
     /opt/confluent/etc/kafka/zookeeper.properties \
     /opt/confluent/etc/kafka/server.properties \
+    /opt/confluent/etc/kafka/connect-distributed.properties \
     /opt/confluent/etc/schema-registry/schema-registry.properties \
     /opt/confluent/etc/schema-registry/connect-avro-distributed.properties
 
@@ -60,6 +61,11 @@ zookeeper.connect=localhost:$ZK_PORT
 EOF
 
 ## Schema Registry specific
+cat <<EOF >>/opt/confluent/etc/kafka/connect-distributed.properties
+
+rest.port=$CONNECT_PORT
+EOF
+
 cat <<EOF >>/opt/confluent/etc/schema-registry/connect-avro-distributed.properties
 
 rest.port=$CONNECT_PORT
@@ -104,6 +110,8 @@ if [[ ! -z "${ADV_HOST}" ]]; then
          >> /opt/confluent/etc/kafka/server.properties
     echo -e "\nrest.advertised.host.name=${ADV_HOST}" \
          >> /opt/confluent/etc/schema-registry/connect-avro-distributed.properties
+    echo -e "\nrest.advertised.host.name=${ADV_HOST}" \
+         >> /opt/confluent/etc/kafka/connect-distributed.properties
     sed -e 's#localhost#'"${ADV_HOST}"'#g' -i /usr/share/landoop/kafka-tests.yml /var/www/env.js /etc/supervisord.conf
 fi
 
@@ -211,6 +219,11 @@ fi
 # Set supervisord to output all logs to stdout
 if echo $DEBUG | egrep -sq "true|TRUE|y|Y|yes|YES|1"; then
     sed -e 's/loglevel=info/loglevel=debug/' -i /etc/supervisord.conf
+fi
+
+# Set supervisord to use the json config file if JSON is set to 1
+if echo $JSON | egrep -sq "true|TRUE|y|Y|yes|YES|1"; then
+    sed -e 's/schema-registry\/connect-avro-distributed.properties/kafka\/connect-distributed.properties/' -i /etc/supervisord.conf
 fi
 
 # Check for port availability
